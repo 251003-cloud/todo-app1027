@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import TodoFilter from './TodoFilter'
+import SampleLoader from './SampleLoader'
 import TodoForm from './TodoForm'
 import TodoList from './TodoList'
 import { addTodo, clearDone, countDone, countRemaining, deleteTodo, editTodo, filterTodos, toggleTodo } from '@/lib/todos'
@@ -42,6 +43,11 @@ export default function TodoApp() {
     setTodos([])
   }
 
+  function handleLoadSamples(texts) {
+  setTodos(texts.reduce((acc, text) => addTodo(acc, text), todos))
+}
+
+
   const doneCount = countDone(todos)
   const remaining = countRemaining(todos)
 
@@ -51,6 +57,7 @@ export default function TodoApp() {
     <div>
       <TodoForm onAdd={handleAdd} />
       <TodoFilter value={filter} onChange={setFilter} />
+      <SampleLoader onLoad={handleLoadSamples} />
       <TodoList todos={visibleTodos} onToggle={handleToggle} onDelete={handleDelete} onEdit={handleEdit} />
       {todos.length > 0 && (
         <p>
