@@ -1,9 +1,39 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import TodoFilter from './TodoFilter'
+import TodoForm from './TodoForm'
 
 test('active のときは「未完了」ボタンだけが太字', () => {
   render(<TodoFilter value="active" onChange={() => {}} />)
   expect(screen.getByRole('button', { name: '未完了' })).toHaveStyle({ fontWeight: 'bold' })
   expect(screen.getByRole('button', { name: 'すべて' })).toHaveStyle({ fontWeight: 'normal' })
   expect(screen.getByRole('button', { name: '完了' })).toHaveStyle({ fontWeight: 'normal' })
+})
+
+test('入力して「追加」を押すと、onAdd が入力した文字で呼ばれる', async () => {
+  const user = userEvent.setup()
+  const handleAdd = jest.fn()
+  render(<TodoForm onAdd={handleAdd} />)
+  await user.type(screen.getByRole('textbox', { name: 'やること' }), '牛乳を買う')
+  await user.click(screen.getByRole('button', { name: '追加' }))
+  expect(handleAdd).toHaveBeenCalledTimes(1)
+  expect(handleAdd).toHaveBeenCalledWith('牛乳を買う')
+})
+
+test('Enter キーでも追加でき、前後の空白は取り除かれ、入力欄が空に戻る', async () => {
+  const user = userEvent.setup()
+  const handleAdd = jest.fn()
+  render(<TodoForm onAdd={handleAdd} />)
+  const input = screen.getByRole('textbox', { name: 'やること' })
+  await user.type(input, '  レポート提出  {Enter}')
+  expect(handleAdd).toHaveBeenCalledWith('レポート提出')
+  expect(input).toHaveValue('')
+})
+
+test('空白だけなら onAdd は呼ばれない', async () => {
+  const user = userEvent.setup()
+  const handleAdd = jest.fn()
+  render(<TodoForm onAdd={handleAdd} />)
+  await user.type(screen.getByRole('textbox', { name: 'やること' }), '   {Enter}')
+  expect(handleAdd).not.toHaveBeenCalled()
 })
